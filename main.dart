@@ -12,6 +12,9 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Startup Name Generator',
+      theme: new ThemeData(          // Add the 3 lines from here...
+        primaryColor: Colors.white,
+      ),
       home: RandomWords(),
 
     );
@@ -34,22 +37,81 @@ class RandomWordsState extends State<RandomWords> {
         });
   }
   Widget _buildRow(WordPair pair) {
-    return ListTile(
+    final bool alreadySaved = _saved.contains(pair);  // Add this line.
+    return new ListTile(
+      title: new Text(
+        pair.asPascalCase,
+        style: _biggerFont,
+      ),
+      trailing: new Icon(   // Add the lines from here...
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+      ),
+      onTap: () {      // Add 9 lines from here...
+        setState(() {
+          if (alreadySaved) {
+            _saved.remove(pair);
+          } else {
+            _saved.add(pair);
+          }
+        });
+      },// ... to here.
+    );
+
+
+   return ListTile(
       title: Text(
         pair.asPascalCase,
         style: _biggerFont,
       ),
     );
+
   }
   Widget build(BuildContext context) {
       return Scaffold(
         appBar: AppBar(
           title: Text('Startup Name Generator'),
-        ),
-        body: _buildSuggestions(),
+          actions: <Widget>[      // Add 3 lines from here...
+            new IconButton(icon: const Icon(Icons.list), onPressed: _pushSaved),
+          ],
+        ), body: _buildSuggestions(),
       );
+
     }
+  //final List<WordPair> _suggestions = <WordPair>[];
+  final Set<WordPair> _saved = new Set<WordPair>();   // Add this line.
+  //final _biggerFont = const TextStyle(fontSize: 18.0);
+  void _pushSaved() {
+    Navigator.of(context).push(new MaterialPageRoute<void>(   // Add 20 lines from here...
+      builder: (BuildContext context) {
+        final Iterable<ListTile> tiles = _saved.map(
+              (WordPair pair) {
+            return new ListTile(
+              title: new Text(
+                pair.asPascalCase,
+                style: _biggerFont,
+              ),
+            );
+          },
+        );
+        final List<Widget> divided = ListTile
+            .divideTiles(
+          context: context,
+          tiles: tiles,
+        )
+            .toList();
+        return new Scaffold(         // Add 6 lines from here...
+          appBar: new AppBar(
+            title: const Text('Saved Suggestions'),
+          ),
+          body: new ListView(children: divided),
+        );
+      },
+    ),
+    );
   }
+
+}
 
 
 
@@ -57,3 +119,4 @@ class RandomWords extends StatefulWidget {
   @override
   RandomWordsState createState() => new RandomWordsState();
 }
+
